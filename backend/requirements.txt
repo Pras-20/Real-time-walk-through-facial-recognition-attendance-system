@@ -1,0 +1,6 @@
+
+pyodbc
+flask
+requests
+azure-storage-blob
+pyodbc
