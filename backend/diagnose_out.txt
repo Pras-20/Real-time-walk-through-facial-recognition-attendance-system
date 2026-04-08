@@ -1,0 +1,94 @@
+﻿==================================================
+ENV CHECK
+==================================================
+FACE_KEY      : FPUVCjhGeeN0478...
+FACE_ENDPOINT : https://face-recog-api-69.cognitiveservices.azure.com
+PERSON_GROUP  : cse-class-D
+
+==================================================
+AZURE FACE API TESTS
+==================================================
+[1] List groups  -> 403: {
+
+  "error": {
+
+    "code": "InvalidRequest",
+
+    "message": "Invalid request has been sent.",
+
+    "innererror": {
+
+      "code": "UnsupportedFeature",
+
+      "message": "Feature is not supported, missing approval for one or more of the following features: Identification,Verification. Please apply for access at https://aka.ms/facerecognition"
+
+    }
+
+  }
+
+}
+[2] Get group    -> 403: {
+
+  "error": {
+
+    "code": "InvalidRequest",
+
+    "message": "Invalid request has been sent.",
+
+    "innererror": {
+
+      "code": "UnsupportedFeature",
+
+      "message": "Feature is not supported, missing approval for one or more of the following features: Identification,Verification. Please apply for access at https://aka.ms/facerecognition"
+
+    }
+
+  }
+
+}
+[3] Create group -> 403: {
+
+  "error": {
+
+    "code": "InvalidRequest",
+
+    "message": "Invalid request has been sent.",
+
+    "innererror": {
+
+      "code": "UnsupportedFeature",
+
+      "message": "Feature is not supported, missing approval for one or more of the following features: Identification,Verification. Please apply for access at https://aka.ms/facerecognition"
+
+    }
+
+  }
+
+}
+[4] Create person-> 403: {
+
+  "error": {
+
+    "code": "InvalidRequest",
+
+    "message": "Invalid request has been sent.",
+
+    "innererror": {
+
+      "code": "UnsupportedFeature",
+
+      "message": "Feature is not supported, missing approval for one or more of the following features: Identification,Verification. Please apply for access at https://aka.ms/facerecognition"
+
+    }
+
+  }
+
+}
+
+==================================================
+AZURE SQL TEST
+==================================================
+SQL_CONN raw: Server=tcp:prasannasql67.database.windows.net,1433;Initial Catalog=free-sql-db-8...
+Available ODBC drivers: ['SQL Server', 'Oracle in XE', 'Microsoft Access Driver (*.mdb, *.accdb)', 'Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)', 'Microsoft Access Text Driver (*.txt, *.csv)', 'Microsoft Access dBASE Driver (*.dbf, *.ndx, *.mdx)']
+Connecting with: DRIVER={SQL Server};Server=tcp:prasannasql67.database.windows.net,1433;Initial C...
+SQL ERROR: ('HY000', '[HY000] [Microsoft][ODBC SQL Server Driver][SQL Server]Windows logins are not supported in this version of SQL Server. (40607) (SQLDriverConnect); [HY000] [Microsoft][ODBC SQL Server Driver]Invalid connection string attribute (0); [HY000] [Microsoft][ODBC SQL Server Driver][SQL Server]Windows logins are not supported in this version of SQL Server. (40607); [HY000] [Microsoft][ODBC SQL Server Driver]Invalid connection string attribute (0)')

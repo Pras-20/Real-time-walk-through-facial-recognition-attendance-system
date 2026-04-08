@@ -1,6 +1,7 @@
-
-pyodbc
-flask
+fastapi
+uvicorn
+python-dotenv
+python-multipart
 requests
 azure-storage-blob
 pyodbc

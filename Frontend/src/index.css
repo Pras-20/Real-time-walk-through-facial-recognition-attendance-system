@@ -1,0 +1,681 @@
+/* ── Reset ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font: 'Outfit', sans-serif;
+  --indigo-300: #a5b4fc;
+  --indigo-400: #818cf8;
+  --indigo-500: #6366f1;
+  --indigo-600: #4f46e5;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --slate-50:  #f8fafc;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+
+  --bg:           var(--slate-950);
+  --panel-bg:     rgba(30, 41, 59, 0.7);
+  --panel-border: rgba(148, 163, 184, 0.1);
+  --text:         var(--slate-50);
+  --text-muted:   var(--slate-400);
+  --primary:      var(--indigo-500);
+  --primary-h:    var(--indigo-600);
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -15%, rgba(99,102,241,0.22), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 110%, rgba(168,85,247,0.15), transparent),
+    var(--bg);
+  min-height: 100vh;
+}
+
+/* ── App Shell ──────────────────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0 1.5rem;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 0 18px rgba(99,102,241,0.45);
+}
+
+.logo-text {
+  font-size: 1.45rem;
+  font-weight: 800;
+  background: linear-gradient(to right, var(--indigo-400), var(--purple-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────── */
+.app-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.25s;
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: rgba(99,102,241,0.1);
+  border-color: var(--panel-border);
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  color: white;
+  box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+}
+
+/* ── Main Content ────────────────────────────────────────────────────── */
+.app-main-content {
+  flex: 1;
+  padding: 1.5rem 0;
+}
+
+/* ── Glass Panel ─────────────────────────────────────────────────────── */
+.panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.45);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-panel { flex: 1; }
+
+.panel-header {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid var(--panel-border);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--slate-300);
+  flex-shrink: 0;
+}
+
+.panel-header .icon { font-size: 1rem; }
+
+.panel-body {
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+  overflow: auto;
+}
+
+/* ── Attendance Page Layout ──────────────────────────────────────────── */
+.attendance-page {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .attendance-page { grid-template-columns: 1fr; }
+}
+
+.camera-col { display: flex; flex-direction: column; gap: 1.25rem; }
+.sidebar-col { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── Video Wrapper ───────────────────────────────────────────────────── */
+.video-wrapper {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--slate-800);
+  aspect-ratio: 16/10;
+  width: 100%;
+}
+
+.video-wrapper video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+/* ── Scanning Overlay ────────────────────────────────────────────────── */
+.scan-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scan-overlay.active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(to right, transparent, var(--indigo-400), transparent);
+  box-shadow: 0 0 14px var(--indigo-400);
+  animation: scan-line 1.4s ease-in-out infinite;
+}
+
+.scan-corners {
+  position: absolute;
+  inset: 10%;
+  border-radius: 4px;
+}
+
+.scan-overlay.active .scan-corners::before,
+.scan-overlay.active .scan-corners::after {
+  content: '';
+  position: absolute;
+  width: 28px; height: 28px;
+  border-color: var(--indigo-400);
+  border-style: solid;
+  border-width: 0;
+}
+
+.scan-overlay.active .scan-corners::before {
+  top: 0; left: 0;
+  border-top-width: 3px; border-left-width: 3px;
+  border-radius: 2px 0 0 0;
+}
+
+.scan-overlay.active .scan-corners::after {
+  bottom: 0; right: 0;
+  border-bottom-width: 3px; border-right-width: 3px;
+  border-radius: 0 0 2px 0;
+}
+
+/* ── State Pill ─────────────────────────────────────────────────────── */
+.state-pill {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+}
+
+.state-pill.scanning    { background: rgba(100,116,139,0.2); color: var(--slate-400); }
+.state-pill.countdown   { background: rgba(99,102,241,0.2);  color: var(--indigo-400); }
+.state-pill.recognizing { background: rgba(168,85,247,0.2);  color: var(--purple-400); }
+.state-pill.result      { background: rgba(16,185,129,0.2);  color: var(--emerald-400); }
+
+/* ── Countdown Ring ─────────────────────────────────────────────────── */
+.countdown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(2px);
+  gap: 0.75rem;
+}
+
+.countdown-ring {
+  position: relative;
+  width: 110px; height: 110px;
+}
+
+.countdown-ring svg {
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg   { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
+.ring-fill {
+  fill: none;
+  stroke: url(#ringGrad);
+  stroke: var(--indigo-400);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.9s ease;
+}
+
+.countdown-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+}
+
+.countdown-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--indigo-300);
+  letter-spacing: 0.02em;
+}
+
+/* ── Spinner large ───────────────────────────────────────────────────── */
+.spinner-large {
+  width: 60px; height: 60px;
+  border: 5px solid rgba(255,255,255,0.15);
+  border-top-color: var(--indigo-400);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+/* ── Result Overlay ──────────────────────────────────────────────────── */
+.result-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  backdrop-filter: blur(4px);
+  animation: fade-in 0.4s ease;
+}
+
+.result-overlay.success   { background: rgba(16,185,129,0.45); }
+.result-overlay.duplicate { background: rgba(251,191,36,0.40); }
+.result-overlay.error     { background: rgba(239,68,68,0.45); }
+
+.result-icon  { font-size: 3.5rem; }
+.result-name  { font-size: 1.8rem; font-weight: 800; color: white; text-align: center; }
+.result-sub   { font-size: 1rem; color: rgba(255,255,255,0.8); }
+.result-msg   { font-size: 0.9rem; color: rgba(255,255,255,0.7); }
+
+/* ── Scan Status Bar ─────────────────────────────────────────────────── */
+.scan-status-bar {
+  padding: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+  min-height: 2rem;
+}
+
+.pulse-text        { color: var(--text-muted); animation: pulse-opacity 3s ease infinite; }
+.pulse-text.indigo { color: var(--indigo-400); }
+.pulse-text.purple { color: var(--purple-400); }
+
+/* ── Session Sidebar ─────────────────────────────────────────────────── */
+.session-date  { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.35rem; }
+.session-clock { font-size: 1.9rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 1.1rem; }
+
+.session-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.stat-card {
+  background: rgba(15,23,42,0.5);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 0.9rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--indigo-400), var(--purple-400));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label { font-size: 0.73rem; color: var(--text-muted); margin-top: 0.1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Log List ────────────────────────────────────────────────────────── */
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.log-list::-webkit-scrollbar { width: 4px; }
+.log-list::-webkit-scrollbar-thumb { background: var(--slate-700); border-radius: 999px; }
+
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(15,23,42,0.4);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  animation: slide-up 0.3s ease;
+}
+
+.log-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+
+.log-info { flex: 1; min-width: 0; }
+.log-id   { font-size: 0.85rem; font-weight: 600; color: var(--slate-300); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-time { font-size: 0.72rem; color: var(--text-muted); }
+
+.log-badge { font-size: 0.68rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; flex-shrink: 0; }
+.log-badge.new       { background: rgba(16,185,129,0.15); color: var(--emerald-400); }
+.log-badge.duplicate { background: rgba(251,191,36,0.15); color: var(--amber-400); }
+
+.log-empty { text-align: center; color: var(--text-muted); font-size: 0.88rem; padding: 2rem 0; line-height: 1.6; }
+
+/* ── Register Page Layout ────────────────────────────────────────────── */
+.register-page {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) { .register-page { grid-template-columns: 1fr; } }
+
+.register-form-col { display: flex; flex-direction: column; gap: 1.1rem; }
+.students-col { min-height: 400px; }
+
+/* ── Registration Form ───────────────────────────────────────────────── */
+.reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-300);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input {
+  background: rgba(15,23,42,0.6);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-family: var(--font);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.form-input:focus { border-color: var(--indigo-500); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.form-input::placeholder { color: var(--slate-600); }
+
+/* ── Camera capture ─────────────────────────────────────────────────── */
+.camera-capture-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 700px) { .camera-capture-area { grid-template-columns: 1fr; } }
+
+.reg-video { aspect-ratio: 4/3; border-radius: 12px; }
+
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.camera-placeholder p { font-size: 0.85rem; }
+
+.camera-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.camera-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 0.25rem;
+}
+
+/* ── Photo Thumbnails ────────────────────────────────────────────────── */
+.photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.photo-thumb {
+  position: relative;
+  width: 80px; height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--panel-border);
+}
+
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.remove-photo {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: rgba(239,68,68,0.85);
+  border: none;
+  color: white;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.btn {
+  padding: 0.7rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--font);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  color: white;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(99,102,241,0.5); }
+
+.btn-secondary {
+  background: rgba(99,102,241,0.15);
+  color: var(--indigo-400);
+  border: 1px solid rgba(99,102,241,0.3);
+}
+.btn-secondary:hover:not(:disabled) { background: rgba(99,102,241,0.25); }
+
+.btn-ghost {
+  background: rgba(239,68,68,0.1);
+  color: var(--red-400);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+.btn-ghost:hover { background: rgba(239,68,68,0.2); }
+
+.btn-submit {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(99,102,241,0.35);
+}
+.btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(99,102,241,0.5); }
+
+/* ── Registration Status ─────────────────────────────────────────────── */
+.reg-status {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.reg-status.success  { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: var(--emerald-400); }
+.reg-status.error    { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.18); color: var(--red-400); }
+.reg-status.loading  { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.18); color: var(--indigo-400); }
+
+/* ── Training Banner ─────────────────────────────────────────────────── */
+.training-banner {
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+  background: rgba(30,41,59,0.5);
+  border: 1px solid var(--panel-border);
+}
+.training-banner.succeeded { border-color: rgba(16,185,129,0.3); color: var(--emerald-400); }
+.training-banner.running   { border-color: rgba(99,102,241,0.3); color: var(--indigo-400); }
+
+/* ── Student List ────────────────────────────────────────────────────── */
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.student-list::-webkit-scrollbar { width: 4px; }
+.student-list::-webkit-scrollbar-thumb { background: var(--slate-700); border-radius: 999px; }
+
+.student-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  background: rgba(15,23,42,0.45);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  animation: slide-up 0.3s ease;
+}
+
+.student-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo-500), var(--purple-500));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.student-info { flex: 1; min-width: 0; }
+.student-name { font-size: 0.9rem; font-weight: 600; color: var(--slate-200); }
+.student-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
+.student-date { font-size: 0.72rem; color: var(--slate-600); margin-top: 0.1rem; }
+
+/* ── Small Spinner ───────────────────────────────────────────────────── */
+.spinner-sm {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+.app-footer {
+  text-align: center;
+  padding: 1rem 0;
+  color: var(--slate-600);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────── */
+@keyframes spin          { to { transform: rotate(360deg); } }
+@keyframes scan-line     { 0%{top:-3%} 100%{top:103%} }
+@keyframes slide-up      { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fade-in       { from{opacity:0} to{opacity:1} }
+@keyframes pulse-opacity { 0%,100%{opacity:1} 50%{opacity:0.55} }

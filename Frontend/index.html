@@ -1,12 +1,17 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <title>Attendance</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartAttend – AI Facial Recognition Attendance</title>
+    <meta name="description" content="Real-time AI-powered attendance system using facial recognition for professors to mark student attendance instantly." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <video id="video" autoplay></video>
-    <button onclick="capture()">Mark Attendance</button>
-
-    <script src="app.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
