@@ -1,5 +1,5 @@
 import os
-import pyodbc
+import pymssql
 from datetime import date
 from dotenv import load_dotenv
 
@@ -9,17 +9,33 @@ SQL_CONNECTION_STRING = os.environ.get("SQL_CONNECTION_STRING")
 
 
 def get_connection():
+    """Create a connection using pymssql by parsing the SQL_CONNECTION_STRING."""
     conn_str = SQL_CONNECTION_STRING
     if not conn_str:
         raise ValueError("SQL_CONNECTION_STRING is missing.")
-    if "DRIVER=" not in conn_str.upper():
-        drivers = pyodbc.drivers()
-        preferred = next((d for d in drivers if 'SQL Server' in d), None)
-        if preferred:
-            conn_str = f"DRIVER={{{preferred}}};" + conn_str
-        else:
-            raise Exception("No SQL Server ODBC driver found on the system. Please install one.")
-    return pyodbc.connect(conn_str)
+
+    # Parse components from Azure-style connection string
+    # Format: Server=tcp:xxx,1433;Database=yyy;Uid=zzz;Pwd={ppp};...
+    params = {}
+    for part in conn_str.split(';'):
+        if '=' in part:
+            key, val = part.split('=', 1)
+            params[key.strip().lower()] = val.strip()
+
+    server = params.get('server', '').replace('tcp:', '').split(',')[0]
+    port = params.get('server', '').split(',')[1] if ',' in params.get('server', '') else '1433'
+    user = params.get('uid', '')
+    password = params.get('pwd', '').strip('{}')
+    database = params.get('database', '')
+
+    return pymssql.connect(
+        server=server,
+        port=port,
+        user=user,
+        password=password,
+        database=database,
+        autocommit=True
+    )
 
 
 
@@ -29,12 +45,12 @@ def register_student(person_id: str, student_id: str, name: str, course: str) ->
         conn = get_connection()
         cursor = conn.cursor()
         # Check if already registered
-        cursor.execute("SELECT COUNT(*) FROM students WHERE student_id = ?", (student_id,))
+        cursor.execute("SELECT COUNT(*) FROM students WHERE student_id = %s", (student_id,))
         if cursor.fetchone()[0] > 0:
             conn.close()
             return False, f"Student ID '{student_id}' is already registered."
         cursor.execute(
-            "INSERT INTO students (person_id, student_id, name, course) VALUES (?, ?, ?, ?)",
+            "INSERT INTO students (person_id, student_id, name, course) VALUES (%s, %s, %s, %s)",
             (person_id, student_id, name, course)
         )
         conn.commit()
@@ -76,7 +92,7 @@ def get_student_by_person_id(person_id: str) -> dict | None:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT person_id, student_id, name, course FROM students WHERE person_id = ?",
+            "SELECT person_id, student_id, name, course FROM students WHERE person_id = %s",
             (person_id,)
         )
         row = cursor.fetchone()
@@ -94,14 +110,14 @@ def mark_attendance(person_id: str, lecture_id: int) -> tuple[bool, str]:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT COUNT(*) FROM attendance WHERE person_id = ? AND lecture_id = ?",
+            "SELECT COUNT(*) FROM attendance WHERE person_id = %s AND lecture_id = %s",
             (person_id, lecture_id)
         )
         if cursor.fetchone()[0] > 0:
             conn.close()
             return False, "Attendance already marked for this lecture."
         cursor.execute(
-            "INSERT INTO attendance (person_id, lecture_id) VALUES (?, ?)",
+            "INSERT INTO attendance (person_id, lecture_id) VALUES (%s, %s)",
             (person_id, lecture_id)
         )
         conn.commit()
@@ -192,7 +208,7 @@ def save_embedding(person_id: str, embedding: list[float]) -> bool:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO face_embeddings (person_id, embedding) VALUES (?, ?)",
+            "INSERT INTO face_embeddings (person_id, embedding) VALUES (%s, %s)",
             (person_id, json.dumps(embedding))
         )
         conn.commit()
@@ -222,7 +238,7 @@ def get_professor_by_email(email: str) -> dict | None:
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name, email, password_hash FROM professors WHERE email = ?", (email,))
+        cursor.execute("SELECT id, name, email, password_hash FROM professors WHERE email = %s", (email,))
         row = cursor.fetchone()
         conn.close()
         if row:
@@ -236,13 +252,13 @@ def create_professor(name: str, email: str, password_hash: str) -> tuple[bool, s
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM professors WHERE email = ?", (email,))
+        cursor.execute("SELECT COUNT(*) FROM professors WHERE email = %s", (email,))
         if cursor.fetchone()[0] > 0:
             conn.close()
             return False, "Professor with this email already exists."
         
         cursor.execute(
-            "INSERT INTO professors (name, email, password_hash) VALUES (?, ?, ?)",
+            "INSERT INTO professors (name, email, password_hash) VALUES (%s, %s, %s)",
             (name, email, password_hash)
         )
         conn.commit()
@@ -259,7 +275,7 @@ def create_class(professor_id: int, course_name: str, schedule_info: str):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO classes (professor_id, course_name, schedule_info) VALUES (?, ?, ?)",
+            "INSERT INTO classes (professor_id, course_name, schedule_info) VALUES (%s, %s, %s)",
             (professor_id, course_name, schedule_info)
         )
         conn.commit()
@@ -272,7 +288,7 @@ def get_classes_by_professor(professor_id: int):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, course_name, schedule_info FROM classes WHERE professor_id = ?", (professor_id,))
+        cursor.execute("SELECT id, course_name, schedule_info FROM classes WHERE professor_id = %s", (professor_id,))
         rows = cursor.fetchall()
         conn.close()
         return [{"id": r[0], "course_name": r[1], "schedule_info": r[2]} for r in rows]
@@ -284,7 +300,7 @@ def start_lecture(class_id: int, date_str: str, time_str: str):
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO lectures (class_id, date, start_time) OUTPUT INSERTED.id VALUES (?, ?, ?)",
+            "INSERT INTO lectures (class_id, date, start_time) OUTPUT INSERTED.id VALUES (%s, %s, %s)",
             (class_id, date_str, time_str)
         )
         lecture_id = cursor.fetchone()[0]
@@ -299,7 +315,7 @@ def end_lecture(lecture_id: int, end_time_str: str):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE lectures SET end_time = ? WHERE id = ?", (end_time_str, lecture_id))
+        cursor.execute("UPDATE lectures SET end_time = %s WHERE id = %s", (end_time_str, lecture_id))
         conn.commit()
         conn.close()
         return True
@@ -311,17 +327,17 @@ def get_lecture_report(lecture_id: int):
         conn = get_connection()
         cursor = conn.cursor()
         # Get target course
-        cursor.execute("SELECT c.course_name FROM lectures l JOIN classes c ON l.class_id = c.id WHERE l.id = ?", (lecture_id,))
+        cursor.execute("SELECT c.course_name FROM lectures l JOIN classes c ON l.class_id = c.id WHERE l.id = %s", (lecture_id,))
         row = cursor.fetchone()
         if not row: return []
         course_name = row[0]
         
         # Get all students in that course
-        cursor.execute("SELECT person_id, student_id, name FROM students WHERE course = ?", (course_name,))
+        cursor.execute("SELECT person_id, student_id, name FROM students WHERE course = %s", (course_name,))
         enrolled = cursor.fetchall()
         
         # Get all attendance marked for this lecture
-        cursor.execute("SELECT person_id, timestamp FROM attendance WHERE lecture_id = ?", (lecture_id,))
+        cursor.execute("SELECT person_id, timestamp FROM attendance WHERE lecture_id = %s", (lecture_id,))
         attended_rows = cursor.fetchall()
         attended_map = {r[0]: r[1] for r in attended_rows}
         
@@ -346,11 +362,11 @@ def toggle_attendance(person_id: str, lecture_id: int, present: bool):
         conn = get_connection()
         cursor = conn.cursor()
         if present:
-            cursor.execute("SELECT COUNT(*) FROM attendance WHERE person_id = ? AND lecture_id = ?", (person_id, lecture_id))
+            cursor.execute("SELECT COUNT(*) FROM attendance WHERE person_id = %s AND lecture_id = %s", (person_id, lecture_id))
             if cursor.fetchone()[0] == 0:
-                cursor.execute("INSERT INTO attendance (person_id, lecture_id) VALUES (?, ?)", (person_id, lecture_id))
+                cursor.execute("INSERT INTO attendance (person_id, lecture_id) VALUES (%s, %s)", (person_id, lecture_id))
         else:
-            cursor.execute("DELETE FROM attendance WHERE person_id = ? AND lecture_id = ?", (person_id, lecture_id))
+            cursor.execute("DELETE FROM attendance WHERE person_id = %s AND lecture_id = %s", (person_id, lecture_id))
         conn.commit()
         conn.close()
         return True
@@ -363,11 +379,11 @@ def get_course_stats(course_name: str):
         cursor = conn.cursor()
         
         # Get all students in the course
-        cursor.execute("SELECT person_id, student_id, name FROM students WHERE course = ?", (course_name,))
+        cursor.execute("SELECT person_id, student_id, name FROM students WHERE course = %s", (course_name,))
         students = cursor.fetchall()
         
         # Get count of total lectures for this course
-        cursor.execute("SELECT COUNT(*) FROM lectures l JOIN classes c ON l.class_id = c.id WHERE c.course_name = ?", (course_name,))
+        cursor.execute("SELECT COUNT(*) FROM lectures l JOIN classes c ON l.class_id = c.id WHERE c.course_name = %s", (course_name,))
         total_lectures = cursor.fetchone()[0]
         
         if total_lectures == 0:
@@ -382,7 +398,7 @@ def get_course_stats(course_name: str):
                 FROM attendance a 
                 JOIN lectures l ON a.lecture_id = l.id
                 JOIN classes c ON l.class_id = c.id
-                WHERE a.person_id = ? AND c.course_name = ?
+                WHERE a.person_id = %s AND c.course_name = %s
             """, (pid, course_name))
             attended = cursor.fetchone()[0]
             percentage = round((attended / total_lectures) * 100, 1)
@@ -404,7 +420,7 @@ def get_lectures_by_class(class_id: int):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, date, start_time, end_time FROM lectures WHERE class_id = ? ORDER BY created_at DESC", (class_id,))
+        cursor.execute("SELECT id, date, start_time, end_time FROM lectures WHERE class_id = %s ORDER BY created_at DESC", (class_id,))
         rows = cursor.fetchall()
         conn.close()
         return [{"id": r[0], "date": str(r[1]), "start_time": str(r[2]), "end_time": str(r[3])} for r in rows]
@@ -422,7 +438,7 @@ def get_attendance_stats(professor_id: int):
             FROM lectures l
             JOIN classes c ON l.class_id = c.id
             LEFT JOIN attendance a ON l.id = a.lecture_id
-            WHERE c.professor_id = ? AND l.date >= DATEADD(day, -14, GETDATE())
+            WHERE c.professor_id = %s AND l.date >= DATEADD(day, -14, GETDATE())
             GROUP BY l.date
             ORDER BY l.date ASC
         """
@@ -445,12 +461,12 @@ def get_dashboard_summary(professor_id: int):
             SELECT COUNT(DISTINCT s.person_id) 
             FROM students s
             JOIN classes c ON s.course = c.course_name
-            WHERE c.professor_id = ?
+            WHERE c.professor_id = %s
         """, (professor_id,))
         total_students = cursor.fetchone()[0]
         
         # 2. Total classes for this professor
-        cursor.execute("SELECT COUNT(*) FROM classes WHERE professor_id = ?", (professor_id,))
+        cursor.execute("SELECT COUNT(*) FROM classes WHERE professor_id = %s", (professor_id,))
         total_classes = cursor.fetchone()[0]
         
         # 3. Lectures happening today for this professor
@@ -458,7 +474,7 @@ def get_dashboard_summary(professor_id: int):
             SELECT COUNT(*) 
             FROM lectures l 
             JOIN classes c ON l.class_id = c.id
-            WHERE c.professor_id = ? AND l.date = CAST(GETDATE() AS DATE)
+            WHERE c.professor_id = %s AND l.date = CAST(GETDATE() AS DATE)
         """, (professor_id,))
         lectures_today = cursor.fetchone()[0]
         
@@ -468,7 +484,7 @@ def get_dashboard_summary(professor_id: int):
             FROM attendance a 
             JOIN lectures l ON a.lecture_id = l.id 
             JOIN classes c ON l.class_id = c.id
-            WHERE c.professor_id = ? AND l.date = CAST(GETDATE() AS DATE)
+            WHERE c.professor_id = %s AND l.date = CAST(GETDATE() AS DATE)
         """, (professor_id,))
         present_today = cursor.fetchone()[0]
         
