@@ -1,34 +1,68 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { 
+  UserPlus, 
+  Camera, 
+  Trash2, 
+  CheckCircle, 
+  XCircle, 
+  Users, 
+  GraduationCap,
+  BrainCircuit,
+  AlertTriangle
+} from 'lucide-react';
 
 const API = 'http://127.0.0.1:8000';
 const MAX_PHOTOS = 6;
 const MIN_PHOTOS = 3;
 
 export default function RegisterPage() {
+  const { token } = useContext(AuthContext);
   const videoRef      = useRef(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [photos, setPhotos]     = useState([]); // Array of { blob, url }
   const [form, setForm]         = useState({ student_id: '', name: '', course: '' });
   const [status, setStatus]     = useState(null); // { type: 'success'|'error'|'loading', msg }
   const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [trainingStatus, setTrainingStatus] = useState(null);
 
-  // Load student list on mount
+  // Load training status and professor's classes on mount
   useEffect(() => {
-    fetch(`${API}/students`).then(r => r.json()).then(setStudents).catch(() => {});
     fetch(`${API}/training-status`).then(r => r.json()).then(setTrainingStatus).catch(() => {});
-  }, []);
+    
+    if (token) {
+        fetch(`${API}/api/classes`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(setClasses)
+        .catch(() => {});
+    }
+  }, [token]);
 
   // Start webcam
   const startCamera = async () => {
+    setStatus(null);
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('MediaDevices API not supported or not in a secure context.');
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
       });
       videoRef.current.srcObject = stream;
       setCameraOn(true);
-    } catch {
-      alert('Camera access denied.');
+    } catch (err) {
+      console.error("Camera Error:", err);
+      let msg = "Camera access denied.";
+      if (err.name === 'NotAllowedError') msg = "Camera permission denied by browser.";
+      if (err.name === 'NotFoundError') msg = "No camera hardware found.";
+      if (err.name === 'NotReadableError') msg = "Camera is already in use by another app (e.g., Zoom, Teams).";
+      if (!window.isSecureContext) msg += " (Note: Site is not in a Secure Context).";
+      
+      setStatus({ type: 'error', msg: `Hardware Error: ${msg}` });
     }
   };
 
@@ -73,7 +107,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setStatus({ type: 'loading', msg: 'Registering student with Azure Face API…' });
+    setStatus({ type: 'loading', msg: 'Registering student with AI Engine…' });
 
     const fd = new FormData();
     fd.append('student_id', form.student_id);
@@ -104,11 +138,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="register-page">
-      {/* ── Left: Form ── */}
+    <div className="register-page register-centered">
       <div className="register-form-col">
         <div className="panel">
-          <div className="panel-header"><span className="icon">➕</span> Register New Student</div>
+          <div className="panel-header">
+            <UserPlus size={18} className="text-indigo-400" /> 
+            Register New Student
+          </div>
           <div className="panel-body">
             <form className="reg-form" onSubmit={handleSubmit}>
               <div className="form-row">
@@ -134,14 +170,19 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="form-row">
-                <label className="form-label">Course / Section</label>
-                <input
+                <label className="form-label">Course / Class *</label>
+                <select 
                   className="form-input"
                   name="course"
                   value={form.course}
                   onChange={handleInput}
-                  placeholder="e.g. B.E CSE – Section D"
-                />
+                  required
+                >
+                  <option value="">-- Select Class --</option>
+                  {[...new Set(classes.map(c => c.course_name))].map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Camera Section */}
@@ -152,7 +193,7 @@ export default function RegisterPage() {
                     <video ref={videoRef} autoPlay playsInline muted />
                     {!cameraOn && (
                       <div className="camera-placeholder">
-                        <span>📷</span>
+                        <Camera size={48} className="text-slate-700" />
                         <p>Camera not started</p>
                       </div>
                     )}
@@ -160,7 +201,7 @@ export default function RegisterPage() {
                   <div className="camera-controls">
                     {!cameraOn ? (
                       <button type="button" className="btn btn-secondary" onClick={startCamera}>
-                        📷 Start Camera
+                        <Camera size={18} /> Start Camera
                       </button>
                     ) : (
                       <>
@@ -170,16 +211,15 @@ export default function RegisterPage() {
                           onClick={snapPhoto}
                           disabled={photos.length >= MAX_PHOTOS}
                         >
-                          📸 Snap Photo
+                          <Camera size={18} /> Snap Photo
                         </button>
                         <button type="button" className="btn btn-ghost" onClick={stopCamera}>
-                          ✕ Stop
+                          <XCircle size={18} /> Stop
                         </button>
                       </>
                     )}
                     <p className="camera-hint">
-                      Capture {MIN_PHOTOS}–{MAX_PHOTOS} clear, well-lit frontal photos.<br />
-                      Slight angle variations improve accuracy.
+                      Capture {MIN_PHOTOS}–{MAX_PHOTOS} clear, well-lit frontal photos.
                     </p>
                   </div>
                 </div>
@@ -191,7 +231,9 @@ export default function RegisterPage() {
                   {photos.map((p, i) => (
                     <div key={i} className="photo-thumb">
                       <img src={p.url} alt={`photo ${i+1}`} />
-                      <button type="button" className="remove-photo" onClick={() => removePhoto(i)}>✕</button>
+                      <button type="button" className="remove-photo" onClick={() => removePhoto(i)}>
+                        <Trash2 size={12} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -212,7 +254,9 @@ export default function RegisterPage() {
               >
                 {status?.type === 'loading' ? (
                   <><span className="spinner-sm" /> Registering…</>
-                ) : '✅ Register Student'}
+                ) : (
+                  <><CheckCircle size={20} /> Register Student</>
+                )}
               </button>
             </form>
           </div>
@@ -221,38 +265,13 @@ export default function RegisterPage() {
         {/* Training Status */}
         {trainingStatus && (
           <div className={`training-banner ${trainingStatus.status}`}>
-            <span>🧠 Face Model:</span>
-            <strong>{trainingStatus.status === 'succeeded' ? '✅ Trained & Ready' : trainingStatus.status === 'running' ? '⏳ Training…' : `⚠️ ${trainingStatus.status}`}</strong>
+            <BrainCircuit size={18} className="mr-2" />
+            <span>Face Model: </span>
+            <strong>
+                {trainingStatus.status === 'ready' ? 'Trained & Ready' : trainingStatus.status === 'running' ? 'Training…' : trainingStatus.status}
+            </strong>
           </div>
         )}
-      </div>
-
-      {/* ── Right: Student List ── */}
-      <div className="students-col">
-        <div className="panel" style={{ height: '100%' }}>
-          <div className="panel-header">
-            <span className="icon">👥</span>
-            Registered Students ({students.length})
-          </div>
-          <div className="panel-body">
-            <div className="student-list">
-              {students.length === 0 ? (
-                <p className="log-empty">No students registered yet.</p>
-              ) : (
-                students.map((s, i) => (
-                  <div key={i} className="student-card">
-                    <div className="student-avatar">{s.name[0].toUpperCase()}</div>
-                    <div className="student-info">
-                      <div className="student-name">{s.name}</div>
-                      <div className="student-meta">{s.student_id} · {s.course || 'No course'}</div>
-                      <div className="student-date">Registered: {s.registered_at?.slice(0, 10)}</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
