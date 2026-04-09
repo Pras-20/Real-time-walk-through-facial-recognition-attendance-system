@@ -7,3 +7,7 @@ azure-storage-blob
 pyodbc
 PyJWT
 bcrypt
+numpy
+face-recognition
+Pillow
+gunicorn
