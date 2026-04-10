@@ -21,7 +21,7 @@ export default function ManageAttendancePage() {
 
   // Fetch classes on mount
   useEffect(() => {
-    fetch('http://localhost:8000/api/classes', {
+    fetch('http://98.70.29.1/api/classes', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -36,7 +36,7 @@ export default function ManageAttendancePage() {
       setSelectedLectureId('');
       setReport([]);
       
-      fetch(`http://localhost:8000/api/classes/${selectedClassId}/lectures`, {
+      fetch(`http://98.70.29.1/api/classes/${selectedClassId}/lectures`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -51,7 +51,7 @@ export default function ManageAttendancePage() {
     if (!lId) return;
     setLoadingReport(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/reports/lectures/${lId}`, {
+      const res = await fetch(`http://98.70.29.1/api/reports/lectures/${lId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -71,7 +71,7 @@ export default function ManageAttendancePage() {
 
   const toggleAttendance = async (personId, currentStatus) => {
     try {
-      const res = await fetch('http://localhost:8000/api/attendance/manual', {
+      const res = await fetch('http://98.70.29.1/api/attendance/manual', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

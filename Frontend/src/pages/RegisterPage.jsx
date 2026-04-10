@@ -12,7 +12,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-const API = 'http://127.0.0.1:8000';
+const API = import.meta.env.VITE_API_URL;
 const MAX_PHOTOS = 6;
 const MIN_PHOTOS = 3;
 
@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
   // Load training status and professor's classes on mount
   useEffect(() => {
-    fetch(`${API}/training-status`).then(r => r.json()).then(setTrainingStatus).catch(() => {});
+    fetch(`${API}/api/training-status`).then(r => r.json()).then(setTrainingStatus).catch(() => {});
     
     if (token) {
         fetch(`${API}/api/classes`, {
@@ -116,7 +116,7 @@ export default function RegisterPage() {
     photos.forEach((p, i) => fd.append('photos', p.blob, `photo${i}.jpg`));
 
     try {
-      const resp = await fetch(`${API}/register`, { method: 'POST', body: fd });
+      const resp = await fetch(`${API}/api/register`, { method: 'POST', body: fd });
       const data = await resp.json();
       if (resp.ok) {
         setStatus({ type: 'success', msg: data.message });
@@ -125,9 +125,9 @@ export default function RegisterPage() {
         setPhotos([]);
         stopCamera();
         // Refresh list
-        const updated = await fetch(`${API}/students`).then(r => r.json());
+        const updated = await fetch(`${API}/api/students`).then(r => r.json());
         setStudents(updated);
-        const ts = await fetch(`${API}/training-status`).then(r => r.json());
+        const ts = await fetch(`${API}/api/training-status`).then(r => r.json());
         setTrainingStatus(ts);
       } else {
         setStatus({ type: 'error', msg: data.detail || 'Registration failed.' });

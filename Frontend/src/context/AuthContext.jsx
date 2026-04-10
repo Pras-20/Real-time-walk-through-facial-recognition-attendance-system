@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
             return;
         }
         try {
-            const res = await fetch('http://localhost:8000/api/auth/me', {
+            const res = await fetch('http://98.70.29.1/api/auth/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {

@@ -21,7 +21,7 @@ export default function SchedulePage() {
 
   const fetchClasses = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/classes', {
+      const res = await fetch('http://98.70.29.1/api/classes', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -47,7 +47,7 @@ export default function SchedulePage() {
     const formattedSchedule = `${day}, ${time}`;
     
     try {
-      const res = await fetch('http://localhost:8000/api/classes', {
+      const res = await fetch('http://98.70.29.1/api/classes', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

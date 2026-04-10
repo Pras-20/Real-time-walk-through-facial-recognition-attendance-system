@@ -16,7 +16,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/classes', {
+    fetch('http://98.70.29.1/api/classes', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -27,7 +27,7 @@ export default function ReportsPage() {
     if (!courseName) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/reports/courses/${encodeURIComponent(courseName)}`, {
+      const res = await fetch(`http://98.70.29.1/api/reports/courses/${encodeURIComponent(courseName)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();

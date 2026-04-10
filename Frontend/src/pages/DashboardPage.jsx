@@ -30,10 +30,10 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         const [statsRes, summaryRes] = await Promise.all([
-          fetch('http://localhost:8000/api/dashboard/stats', {
+          fetch('http://98.70.29.1/api/dashboard/stats', {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch('http://localhost:8000/api/dashboard/summary', {
+          fetch('http://98.70.29.1/api/dashboard/summary', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ]);

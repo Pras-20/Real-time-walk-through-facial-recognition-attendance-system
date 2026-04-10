@@ -176,7 +176,7 @@ def health():
 
 # ── Presence Detection (fast poll) ────────────────────────────────────
 
-@app.post("/detect-presence")
+@app.post("/api/detect-presence")
 async def detect_presence(frame: UploadFile = File(...)):
     """
     Quick single-frame check: is a face present?
@@ -189,7 +189,7 @@ async def detect_presence(frame: UploadFile = File(...)):
 
 # ── Attendance Recognition (multi-frame) ──────────────────────────────
 
-@app.post("/recognize")
+@app.post("/api/recognize")
 async def recognize(
     frames: List[UploadFile] = File(...),
     lecture_id: int = Form(...)
@@ -252,7 +252,7 @@ async def recognize(
 
 # ── Student Registration ───────────────────────────────────────────────
 
-@app.post("/register")
+@app.post("/api/register")
 async def register(
     student_id: str = Form(...),
     name: str = Form(...),
@@ -304,11 +304,11 @@ async def register(
     }
 
 
-@app.get("/training-status")
+@app.get("/api/training-status")
 def training_status():
     return get_training_status()
 
 
-@app.get("/students")
+@app.get("/api/students")
 def list_students():
     return get_all_students()

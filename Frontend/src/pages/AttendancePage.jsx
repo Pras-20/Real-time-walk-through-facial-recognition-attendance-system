@@ -15,7 +15,7 @@ import {
   Users
 } from 'lucide-react';
 
-const API = 'http://127.0.0.1:8000';
+const API = import.meta.env.VITE_API_URL;
 const POLL_INTERVAL_MS   = 800;    // Faster polling
 const STABLE_HOLD_SEC    = 2;      // 2-second recognition target
 const RESULT_DISPLAY_SEC = 3;      // Faster reset
@@ -217,7 +217,7 @@ export default function AttendancePage() {
           return;
       }
 
-      const resp = await fetch(`${API}/recognize`, { method: 'POST', body: fd });
+      const resp = await fetch(`${API}/api/recognize`, { method: 'POST', body: fd });
       const data = await resp.json();
 
       if (resp.ok && data.status === 'success') {
@@ -257,7 +257,7 @@ export default function AttendancePage() {
       try {
         const fd = new FormData();
         fd.append('frame', blob, 'presence.jpg');
-        const resp = await fetch(`${API}/detect-presence`, { method: 'POST', body: fd });
+        const resp = await fetch(`${API}/api/detect-presence`, { method: 'POST', body: fd });
         const { face_detected } = await resp.json();
 
         if (face_detected) setState(STATES.COUNTDOWN);
