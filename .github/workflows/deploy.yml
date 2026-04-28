@@ -1,0 +1,49 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy project files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
+          source: "."
+          target: "/home/admin123/Real-time-walk-through-facial-recognition-attendance-system"
+          exclude: "Frontend/.env,backend/.env"
+
+      - name: Deploy on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/admin123/Real-time-walk-through-facial-recognition-attendance-system
+
+            # Rebuild and restart frontend container
+            docker-compose down
+            docker-compose up -d --build
+
+            # Restart FastAPI backend
+            sudo systemctl restart backend.service
+
+            # Confirm both are running
+            docker-compose ps
+            sudo systemctl status backend.service --no-pager
+
+            # Clean up dangling images
+            docker image prune -f
